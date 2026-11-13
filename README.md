@@ -25,13 +25,20 @@ protocole que l'appli officielle Google TV (« Android TV Remote v2 »).
 
 ## Ce que fait la télécommande
 
-- Marche/arrêt, source, recherche, paramètres
+Tout tient sur un seul écran, sans défiler ; la taille des boutons s'adapte au téléphone.
+
+- Marche/arrêt, source, recherche, pavé numérique, clavier, paramètres
 - Flèches + OK (maintenir pour répéter), retour, accueil, menu, infos
 - Volume (avec niveau affiché), sourdine, chaînes
+- **Boutons de volume du téléphone** : ils règlent le son de la télé quand l'appli est ouverte
 - Lecture/pause, avance/retour rapide, précédent/suivant, touches de couleur
-- Raccourcis YouTube, Netflix, Prime Video, Disney+
-- Pavé numérique, guide des programmes
-- Clavier : envoie du texte dans un champ de la télé (recherche, mot de passe…)
+- Raccourcis SmartTube, Netflix, VLC, Disney+
+- Pavé numérique (avec guide des programmes) et clavier : s'ouvrent en volet par le bas
+
+### Si un raccourci d'appli n'ouvre pas la bonne appli
+
+Ouvre l'appli voulue sur la télé avec la télécommande, puis **reste appuyé** sur le
+bouton du raccourci dans l'appli : il ouvrira désormais cette appli-là.
 
 ## Limites connues
 
@@ -40,6 +47,7 @@ protocole que l'appli officielle Google TV (« Android TV Remote v2 »).
   activer « Allumer via le Wi-Fi / réseau » ou « Veille réseau » si l'option existe.
 - Le clavier envoie les lettres en minuscules.
 - Un raccourci d'appli ne fait rien si l'appli n'est pas installée sur la télé.
+- Quand le volet du clavier est ouvert, les boutons de volume du téléphone règlent le téléphone.
 
 ## Structure du code
 

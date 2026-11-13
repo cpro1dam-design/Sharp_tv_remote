@@ -3,6 +3,7 @@ package tvremote.app
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -65,6 +66,8 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
     private var discovery: TvDiscovery? = null
     private var connectJob: Job? = null
     private var foreground = false
+    /** Package of the app in the foreground on the TV, as reported by the TV. */
+    @Volatile private var currentApp: String? = null
 
     init {
         val host = prefs.getString("host", null)
@@ -123,7 +126,7 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
     override fun changeTv() {
         disconnect()
         cancelPairing()
-        prefs.edit().clear().apply()
+        prefs.edit().remove("host").remove("name").apply()
         _state.update { UiState(screen = Screen.Setup) }
         startSearch()
     }
@@ -161,6 +164,8 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
             _state.update { it.copy(connection = Connection.Connected, tvInfo = info, message = null) }
 
         override fun onVolumeChanged(volume: VolumeInfo) = _state.update { it.copy(volume = volume) }
+
+        override fun onCurrentApp(packageName: String) { currentApp = packageName }
 
         override fun onDisconnected(error: Throwable?) {
             _state.update { it.copy(connection = Connection.Disconnected) }
@@ -228,7 +233,31 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
 
     override fun key(code: Int) = send { it.sendKey(code) }
 
-    override fun openApp(link: String) = send { it.openLink(link) }
+    override fun openApp(slot: Int) {
+        val link = prefs.getString("app_$slot", null)?.let(::launchPackage) ?: APP_SLOTS[slot].link
+        send { it.openLink(link) }
+    }
+
+    override fun bindAppToCurrent(slot: Int) {
+        val app = currentApp
+        val name = APP_SLOTS[slot].name
+        if (app == null) {
+            toast("Ouvre d'abord l'appli voulue sur la télé, puis reste appuyé sur « $name ».")
+            return
+        }
+        prefs.edit().putString("app_$slot", app).apply()
+        toast("Le bouton « $name » ouvrira désormais $app")
+    }
+
+    /** Physical volume keys of the phone, routed to the TV while the remote is shown. */
+    fun onPhoneVolumeKey(up: Boolean): Boolean {
+        if (_state.value.screen != Screen.Remote) return false
+        key(if (up) KeyCodes.VOLUME_UP else KeyCodes.VOLUME_DOWN)
+        return true
+    }
+
+    private fun toast(text: String) =
+        Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
 
     override fun typeText(text: String) = send { r ->
         text.forEach { c -> KeyCodes.forChar(c)?.let { r.sendKey(it) } }
