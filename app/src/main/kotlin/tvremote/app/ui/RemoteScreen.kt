@@ -114,10 +114,10 @@ import kotlin.math.min
  * scrolling, on small phones as on large ones.
  */
 private const val DESIGN_WIDTH = 328f
-private const val DESIGN_HEIGHT = 640f
+private const val DESIGN_HEIGHT = 618f
 
 /** Height of everything but the D-pad, gaps included, in design dp. */
-private const val OTHER_ROWS_HEIGHT = 430f
+private const val OTHER_ROWS_HEIGHT = 408f
 private const val DPAD_WIDTH_RATIO = 0.64f
 
 private val LocalScale = compositionLocalOf { 1f }
@@ -193,16 +193,6 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                         RoundKey(Icons.Rounded.PlayArrow, "Lecture / pause", 46) { k(KeyCodes.MEDIA_PLAY_PAUSE) }
                         RoundKey(Icons.Rounded.FastForward, "Avance rapide", 46, repeat = true) { k(KeyCodes.MEDIA_FAST_FORWARD) }
                         RoundKey(Icons.Rounded.SkipNext, "Suivant", 46) { k(KeyCodes.MEDIA_NEXT) }
-                    }
-
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.u)) {
-                        listOf(
-                            Palette.Red to KeyCodes.PROG_RED, Palette.Green to KeyCodes.PROG_GREEN,
-                            Palette.Yellow to KeyCodes.PROG_YELLOW, Palette.Blue to KeyCodes.PROG_BLUE,
-                        ).forEach { (c, code) ->
-                            PressKey({ k(code) }, Modifier.weight(1f).height(12.u), RoundedCornerShape(50),
-                                c.copy(alpha = 0.85f), label = "Touche couleur") {}
-                        }
                     }
 
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.u)) {

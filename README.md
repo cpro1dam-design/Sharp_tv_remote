@@ -31,7 +31,7 @@ Tout tient sur un seul écran, sans défiler ; la taille des boutons s'adapte au
 - Flèches + OK (maintenir pour répéter), retour, accueil, menu, infos
 - Volume (avec niveau affiché), sourdine, chaînes
 - **Boutons de volume du téléphone** : ils règlent le son de la télé quand l'appli est ouverte
-- Lecture/pause, avance/retour rapide, précédent/suivant, touches de couleur
+- Lecture/pause, avance/retour rapide, précédent/suivant
 - Raccourcis SmartTube, Netflix, VLC, Disney+
 - Pavé numérique (avec guide des programmes) et clavier : s'ouvrent en volet par le bas
 
