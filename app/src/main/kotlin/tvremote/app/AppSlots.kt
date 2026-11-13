@@ -1,17 +1,18 @@
 package tvremote.app
 
 /**
- * The app buttons of the remote. [link] is sent to the TV, which opens whatever
- * app handles it: a deep link, or `market://launch?id=<package>` to start an app
- * by its package name.
+ * The app buttons of the remote. [link] is sent to the TV, which opens the app
+ * that declares it in its manifest. Opening an app by package name
+ * (`market://launch?id=...`) goes through the Play Store and no longer works
+ * for many apps, so each button uses a link the app itself handles.
  */
 data class AppSlot(val name: String, val link: String)
 
 val APP_SLOTS = listOf(
-    AppSlot("SmartTube", launchPackage("com.teamsmart.videomanager.tv")),
+    // SmartTube handles youtube://play; without a video id it just opens its home screen.
+    AppSlot("SmartTube", "youtube://play"),
     AppSlot("Netflix", "https://www.netflix.com/title"),
-    AppSlot("VLC", "vlc://"),
+    // VLC's own "open the app" link (vlc:// is for playing a stream).
+    AppSlot("VLC", "vlclauncher://org.videolan.vlc"),
     AppSlot("Disney+", "https://www.disneyplus.com"),
 )
-
-fun launchPackage(packageName: String) = "market://launch?id=$packageName"

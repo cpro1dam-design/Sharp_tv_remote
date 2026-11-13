@@ -1,10 +1,8 @@
 package tvremote.app.ui
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -407,25 +405,19 @@ private fun AppColumn(slots: List<Int>, vm: RemoteActions, modifier: Modifier) {
     Column(modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.u)) {
         slots.forEach { i ->
             AppKey(APP_SLOTS[i].name, Modifier.fillMaxWidth().weight(1f),
-                onClick = { vm.openApp(i) }, onLongClick = { vm.bindAppToCurrent(i) })
+                onClick = { vm.openApp(i) })
         }
     }
 }
 
-/** Tap opens the app; long press binds the button to the app currently open on the TV. */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun AppKey(name: String, modifier: Modifier, onClick: () -> Unit, onLongClick: () -> Unit) {
+private fun AppKey(name: String, modifier: Modifier, onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     Box(
         modifier
             .clip(RoundedCornerShape(12.u))
             .background(Palette.Surface)
-            .combinedClickable(
-                onClick = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onClick() },
-                onLongClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); onLongClick() },
-                onLongClickLabel = "Associer à l'appli ouverte sur la télé",
-            ),
+            .clickable { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onClick() },
         contentAlignment = Alignment.Center,
     ) {
         Text(name, fontWeight = FontWeight.Medium, fontSize = 13.t, maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -3,7 +3,6 @@ package tvremote.app
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -66,10 +65,9 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
     private var discovery: TvDiscovery? = null
     private var connectJob: Job? = null
     private var foreground = false
-    /** Package of the app in the foreground on the TV, as reported by the TV. */
-    @Volatile private var currentApp: String? = null
 
     init {
+        prefs.edit().apply { (0..3).forEach { remove("app_$it") } }.apply()
         val host = prefs.getString("host", null)
         if (host != null) {
             _state.update { it.copy(screen = Screen.Remote, tv = SavedTv(prefs.getString("name", null) ?: host, host)) }
@@ -165,8 +163,6 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
 
         override fun onVolumeChanged(volume: VolumeInfo) = _state.update { it.copy(volume = volume) }
 
-        override fun onCurrentApp(packageName: String) { currentApp = packageName }
-
         override fun onDisconnected(error: Throwable?) {
             _state.update { it.copy(connection = Connection.Disconnected) }
             remote = null
@@ -234,19 +230,8 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
     override fun key(code: Int) = send { it.sendKey(code) }
 
     override fun openApp(slot: Int) {
-        val link = prefs.getString("app_$slot", null)?.let(::launchPackage) ?: APP_SLOTS[slot].link
+        val link = APP_SLOTS[slot].link
         send { it.openLink(link) }
-    }
-
-    override fun bindAppToCurrent(slot: Int) {
-        val app = currentApp
-        val name = APP_SLOTS[slot].name
-        if (app == null) {
-            toast("Ouvre d'abord l'appli voulue sur la télé, puis reste appuyé sur « $name ».")
-            return
-        }
-        prefs.edit().putString("app_$slot", app).apply()
-        toast("Le bouton « $name » ouvrira désormais $app")
     }
 
     /** Physical volume keys of the phone, routed to the TV while the remote is shown. */
@@ -256,8 +241,6 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app), RemoteActions {
         return true
     }
 
-    private fun toast(text: String) =
-        Toast.makeText(getApplication(), text, Toast.LENGTH_LONG).show()
 
     override fun typeText(text: String) = send { r ->
         text.forEach { c -> KeyCodes.forChar(c)?.let { r.sendKey(it) } }

@@ -12,7 +12,5 @@ interface RemoteActions {
     fun key(code: Int)
     /** Opens the app of button [slot] (index in [APP_SLOTS]). */
     fun openApp(slot: Int)
-    /** Makes button [slot] open the app currently shown on the TV. */
-    fun bindAppToCurrent(slot: Int)
     fun typeText(text: String)
 }

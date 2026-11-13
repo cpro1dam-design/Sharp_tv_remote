@@ -36,10 +36,11 @@ Tout tient sur un seul écran, sans défiler ; la taille des boutons s'adapte au
 - En bas : sourdine, pavé numérique, clavier
 - Pavé numérique (avec guide des programmes) et clavier : s'ouvrent en volet par le bas
 
-### Si un raccourci d'appli n'ouvre pas la bonne appli
+### Si SmartTube ne s'ouvre pas directement
 
-Ouvre l'appli voulue sur la télé avec la télécommande, puis **reste appuyé** sur le
-bouton du raccourci dans l'appli : il ouvrira désormais cette appli-là.
+Le bouton SmartTube envoie un lien YouTube que SmartTube sait ouvrir. Si l'appli
+YouTube officielle est aussi installée, la télé peut demander laquelle utiliser :
+choisis **SmartTube** puis **Toujours**.
 
 ## Limites connues
 
