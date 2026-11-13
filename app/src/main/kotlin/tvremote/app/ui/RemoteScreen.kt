@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,7 +40,6 @@ import androidx.compose.material.icons.rounded.Dialpad
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Keyboard
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
@@ -113,10 +113,10 @@ import kotlin.math.min
  * scrolling, on small phones as on large ones.
  */
 private const val DESIGN_WIDTH = 328f
-private const val DESIGN_HEIGHT = 578f
+private const val DESIGN_HEIGHT = 584f
 
 /** Height of everything but the D-pad, gaps included, in design dp. */
-private const val OTHER_ROWS_HEIGHT = 368f
+private const val OTHER_ROWS_HEIGHT = 374f
 private const val DPAD_WIDTH_RATIO = 0.64f
 
 private val LocalScale = compositionLocalOf { 1f }
@@ -154,18 +154,27 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                 ) {
                     Header(state, vm, k)
 
-                    DPad(dpad, k)
+                    // Search and settings on either side of the D-pad.
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RoundKey(Icons.Rounded.Search, "Recherche", 46) { k(KeyCodes.SEARCH) }
+                        DPad(dpad, k)
+                        RoundKey(Icons.Rounded.Settings, "Paramètres", 46) { k(KeyCodes.SETTINGS) }
+                    }
 
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    // Home in the middle, back right next to it.
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.u, Alignment.CenterHorizontally)) {
                         RoundKey(Icons.AutoMirrored.Rounded.ArrowBack, "Retour", 54) { k(KeyCodes.BACK) }
                         RoundKey(Icons.Rounded.Home, "Accueil", 54) { k(KeyCodes.HOME) }
                         RoundKey(Icons.Rounded.Menu, "Menu", 54) { k(KeyCodes.MENU) }
-                        RoundKey(Icons.Rounded.Info, "Infos", 54) { k(KeyCodes.INFO) }
-                        RoundKey(Icons.Rounded.Settings, "Paramètres", 54) { k(KeyCodes.SETTINGS) }
                     }
 
-                    // Volume on the left; the other secondary keys in a 2 x 2 grid on the right.
+                    // Volume in the middle, app shortcuts on each side.
                     Row(Modifier.fillMaxWidth().height(118.u), horizontalArrangement = Arrangement.spacedBy(14.u)) {
+                        AppColumn(APP_SLOTS.indices.take(2), vm, Modifier.weight(1f))
                         val v = state.volume
                         val level = when {
                             v == null || v.max <= 0 -> null
@@ -173,16 +182,7 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                             else -> "${v.level}"
                         }
                         Rocker("VOL", level, Modifier.width(62.u), up = { k(KeyCodes.VOLUME_UP) }, down = { k(KeyCodes.VOLUME_DOWN) })
-                        Column(Modifier.weight(1f).fillMaxSize(), verticalArrangement = Arrangement.SpaceEvenly) {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                RoundKey(Icons.AutoMirrored.Rounded.VolumeOff, "Couper le son", 50) { k(KeyCodes.VOLUME_MUTE) }
-                                RoundKey(Icons.Rounded.Search, "Recherche", 50) { k(KeyCodes.SEARCH) }
-                            }
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                RoundKey(Icons.Rounded.Dialpad, "Pavé numérique", 50) { sheet = Sheet.Digits }
-                                RoundKey(Icons.Rounded.Keyboard, "Clavier", 50) { sheet = Sheet.Keyboard }
-                            }
-                        }
+                        AppColumn(APP_SLOTS.indices.drop(2), vm, Modifier.weight(1f))
                     }
 
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -193,10 +193,10 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                         RoundKey(Icons.Rounded.SkipNext, "Suivant", 46) { k(KeyCodes.MEDIA_NEXT) }
                     }
 
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.u)) {
-                        APP_SLOTS.forEachIndexed { i, slot ->
-                            AppKey(slot.name, Modifier.weight(1f), onClick = { vm.openApp(i) }, onLongClick = { vm.bindAppToCurrent(i) })
-                        }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(28.u, Alignment.CenterHorizontally)) {
+                        RoundKey(Icons.AutoMirrored.Rounded.VolumeOff, "Couper le son", 50) { k(KeyCodes.VOLUME_MUTE) }
+                        RoundKey(Icons.Rounded.Dialpad, "Pavé numérique", 50) { sheet = Sheet.Digits }
+                        RoundKey(Icons.Rounded.Keyboard, "Clavier", 50) { sheet = Sheet.Keyboard }
                     }
                 }
 
@@ -374,6 +374,16 @@ private fun Rocker(label: String, detail: String?, modifier: Modifier, up: () ->
     }
 }
 
+@Composable
+private fun AppColumn(slots: List<Int>, vm: RemoteActions, modifier: Modifier) {
+    Column(modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.u)) {
+        slots.forEach { i ->
+            AppKey(APP_SLOTS[i].name, Modifier.fillMaxWidth().weight(1f),
+                onClick = { vm.openApp(i) }, onLongClick = { vm.bindAppToCurrent(i) })
+        }
+    }
+}
+
 /** Tap opens the app; long press binds the button to the app currently open on the TV. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -381,7 +391,6 @@ private fun AppKey(name: String, modifier: Modifier, onClick: () -> Unit, onLong
     val haptic = LocalHapticFeedback.current
     Box(
         modifier
-            .height(44.u)
             .clip(RoundedCornerShape(12.u))
             .background(Palette.Surface)
             .combinedClickable(

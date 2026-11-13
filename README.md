@@ -28,11 +28,12 @@ protocole que l'appli officielle Google TV (« Android TV Remote v2 »).
 Tout tient sur un seul écran, sans défiler ; la taille des boutons s'adapte au téléphone.
 
 - En haut : marche/arrêt et source
-- Flèches + OK (maintenir pour répéter), retour, accueil, menu, infos, paramètres
-- Volume (avec niveau affiché), sourdine, recherche, pavé numérique, clavier
+- Flèches + OK (maintenir pour répéter), avec recherche et paramètres de chaque côté
+- Retour, accueil (au centre), menu
+- Volume au centre (avec niveau affiché), raccourcis SmartTube, Netflix, VLC, Disney+ de chaque côté
 - **Boutons de volume du téléphone** : ils règlent le son de la télé quand l'appli est ouverte
 - Lecture/pause, avance/retour rapide, précédent/suivant
-- Raccourcis SmartTube, Netflix, VLC, Disney+
+- En bas : sourdine, pavé numérique, clavier
 - Pavé numérique (avec guide des programmes) et clavier : s'ouvrent en volet par le bas
 
 ### Si un raccourci d'appli n'ouvre pas la bonne appli
