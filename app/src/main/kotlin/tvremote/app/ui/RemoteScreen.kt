@@ -111,10 +111,14 @@ import kotlin.math.min
 /**
  * Size of the content the remote is designed for, in dp. The whole remote is
  * scaled by `min(available / design)` so it always fits on one screen without
- * scrolling, on small phones as on large ones. The D-pad takes any extra height.
+ * scrolling, on small phones as on large ones.
  */
 private const val DESIGN_WIDTH = 328f
 private const val DESIGN_HEIGHT = 640f
+
+/** Height of everything but the D-pad, gaps included, in design dp. */
+private const val OTHER_ROWS_HEIGHT = 430f
+private const val DPAD_WIDTH_RATIO = 0.64f
 
 private val LocalScale = compositionLocalOf { 1f }
 
@@ -140,10 +144,13 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
             val scale = min(maxWidth.value / DESIGN_WIDTH, maxHeight.value / DESIGN_HEIGHT).coerceIn(0.55f, 1.6f)
+            // D-pad: at most 64 % of the width, and never more than the height left by the other rows.
+            val dpad = min(maxWidth.value * DPAD_WIDTH_RATIO, maxHeight.value - OTHER_ROWS_HEIGHT * scale).dp
             CompositionLocalProvider(LocalScale provides scale) {
                 Column(
                     Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.u),
+                    // Spare height is shared evenly between the rows.
+                    verticalArrangement = Arrangement.SpaceEvenly,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Header(state, vm)
@@ -157,10 +164,7 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                         RoundKey(Icons.Rounded.Settings, "Paramètres", 46) { k(KeyCodes.SETTINGS) }
                     }
 
-                    // The D-pad absorbs the spare height of tall screens.
-                    BoxWithConstraints(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                        DPad(min(maxWidth.value * 0.8f, maxHeight.value).dp, k)
-                    }
+                    DPad(dpad, k)
 
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         RoundKey(Icons.AutoMirrored.Rounded.ArrowBack, "Retour", 54) { k(KeyCodes.BACK) }
@@ -170,9 +174,9 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                     }
 
                     Row(Modifier.fillMaxWidth().height(118.u), horizontalArrangement = Arrangement.spacedBy(14.u)) {
-                        Rocker("VOL", Modifier.weight(1f), up = { k(KeyCodes.VOLUME_UP) }, down = { k(KeyCodes.VOLUME_DOWN) })
+                        Rocker("VOL", Modifier.width(62.u), up = { k(KeyCodes.VOLUME_UP) }, down = { k(KeyCodes.VOLUME_DOWN) })
                         Column(
-                            Modifier.weight(0.8f).fillMaxSize(),
+                            Modifier.weight(1f).fillMaxSize(),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
@@ -180,7 +184,7 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                             Spacer(Modifier.height(8.u))
                             VolumeLevel(state)
                         }
-                        Rocker("CH", Modifier.weight(1f), up = { k(KeyCodes.CHANNEL_UP) }, down = { k(KeyCodes.CHANNEL_DOWN) })
+                        Rocker("CH", Modifier.width(62.u), up = { k(KeyCodes.CHANNEL_UP) }, down = { k(KeyCodes.CHANNEL_DOWN) })
                     }
 
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
