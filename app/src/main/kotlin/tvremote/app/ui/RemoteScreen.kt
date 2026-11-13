@@ -56,7 +56,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -114,10 +113,10 @@ import kotlin.math.min
  * scrolling, on small phones as on large ones.
  */
 private const val DESIGN_WIDTH = 328f
-private const val DESIGN_HEIGHT = 618f
+private const val DESIGN_HEIGHT = 578f
 
 /** Height of everything but the D-pad, gaps included, in design dp. */
-private const val OTHER_ROWS_HEIGHT = 408f
+private const val OTHER_ROWS_HEIGHT = 368f
 private const val DPAD_WIDTH_RATIO = 0.64f
 
 private val LocalScale = compositionLocalOf { 1f }
@@ -153,16 +152,7 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                     verticalArrangement = Arrangement.SpaceEvenly,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Header(state, vm)
-
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        RoundKey(Icons.Rounded.PowerSettingsNew, "Marche / arrêt", 46, Palette.Power) { k(KeyCodes.POWER) }
-                        RoundKey(Icons.AutoMirrored.Rounded.Input, "Source", 46) { k(KeyCodes.TV_INPUT) }
-                        RoundKey(Icons.Rounded.Search, "Recherche", 46) { k(KeyCodes.SEARCH) }
-                        RoundKey(Icons.Rounded.Dialpad, "Pavé numérique", 46) { sheet = Sheet.Digits }
-                        RoundKey(Icons.Rounded.Keyboard, "Clavier", 46) { sheet = Sheet.Keyboard }
-                        RoundKey(Icons.Rounded.Settings, "Paramètres", 46) { k(KeyCodes.SETTINGS) }
-                    }
+                    Header(state, vm, k)
 
                     DPad(dpad, k)
 
@@ -171,20 +161,28 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                         RoundKey(Icons.Rounded.Home, "Accueil", 54) { k(KeyCodes.HOME) }
                         RoundKey(Icons.Rounded.Menu, "Menu", 54) { k(KeyCodes.MENU) }
                         RoundKey(Icons.Rounded.Info, "Infos", 54) { k(KeyCodes.INFO) }
+                        RoundKey(Icons.Rounded.Settings, "Paramètres", 54) { k(KeyCodes.SETTINGS) }
                     }
 
+                    // Volume on the left; the other secondary keys in a 2 x 2 grid on the right.
                     Row(Modifier.fillMaxWidth().height(118.u), horizontalArrangement = Arrangement.spacedBy(14.u)) {
-                        Rocker("VOL", Modifier.width(62.u), up = { k(KeyCodes.VOLUME_UP) }, down = { k(KeyCodes.VOLUME_DOWN) })
-                        Column(
-                            Modifier.weight(1f).fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            RoundKey(Icons.AutoMirrored.Rounded.VolumeOff, "Couper le son", 50) { k(KeyCodes.VOLUME_MUTE) }
-                            Spacer(Modifier.height(8.u))
-                            VolumeLevel(state)
+                        val v = state.volume
+                        val level = when {
+                            v == null || v.max <= 0 -> null
+                            v.muted -> "Muet"
+                            else -> "${v.level}"
                         }
-                        Rocker("CH", Modifier.width(62.u), up = { k(KeyCodes.CHANNEL_UP) }, down = { k(KeyCodes.CHANNEL_DOWN) })
+                        Rocker("VOL", level, Modifier.width(62.u), up = { k(KeyCodes.VOLUME_UP) }, down = { k(KeyCodes.VOLUME_DOWN) })
+                        Column(Modifier.weight(1f).fillMaxSize(), verticalArrangement = Arrangement.SpaceEvenly) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                                RoundKey(Icons.AutoMirrored.Rounded.VolumeOff, "Couper le son", 50) { k(KeyCodes.VOLUME_MUTE) }
+                                RoundKey(Icons.Rounded.Search, "Recherche", 50) { k(KeyCodes.SEARCH) }
+                            }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                                RoundKey(Icons.Rounded.Dialpad, "Pavé numérique", 50) { sheet = Sheet.Digits }
+                                RoundKey(Icons.Rounded.Keyboard, "Clavier", 50) { sheet = Sheet.Keyboard }
+                            }
+                        }
                     }
 
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -214,21 +212,26 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
     }
 }
 
+/** Top row: power and source, then the TV name and connection status. */
 @Composable
-private fun Header(state: UiState, vm: RemoteActions) {
+private fun Header(state: UiState, vm: RemoteActions, k: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        RoundKey(Icons.Rounded.PowerSettingsNew, "Marche / arrêt", 46, Palette.Power) { k(KeyCodes.POWER) }
+        Spacer(Modifier.width(10.u))
+        RoundKey(Icons.AutoMirrored.Rounded.Input, "Source", 46) { k(KeyCodes.TV_INPUT) }
+        Spacer(Modifier.width(14.u))
         val (dot, label) = when (state.connection) {
             Connection.Connected -> Palette.Ok to "Connectée"
             Connection.Connecting -> Palette.Yellow to "Connexion…"
             Connection.Disconnected -> Palette.Muted to "Déconnectée"
         }
         Column(Modifier.weight(1f)) {
-            Text(state.tv?.name ?: "Télé", fontWeight = FontWeight.SemiBold, fontSize = 18.t, maxLines = 1,
+            Text(state.tv?.name ?: "Télé", fontWeight = FontWeight.SemiBold, fontSize = 15.t, maxLines = 1,
                 overflow = TextOverflow.Ellipsis)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(7.u).clip(CircleShape).background(dot))
-                Spacer(Modifier.width(6.u))
-                Text(label, color = Palette.Muted, fontSize = 12.t)
+                Spacer(Modifier.width(5.u))
+                Text(label, color = Palette.Muted, fontSize = 11.t)
             }
         }
         IconButton(onClick = vm::changeTv, modifier = Modifier.size(40.u)) {
@@ -257,23 +260,6 @@ private fun StatusBanner(state: UiState, vm: RemoteActions, modifier: Modifier) 
                 TextButton(onClick = vm::connect) { Text("Réessayer") }
             }
         }
-    }
-}
-
-@Composable
-private fun VolumeLevel(state: UiState) {
-    val v = state.volume ?: return
-    if (v.max <= 0) return
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        LinearProgressIndicator(
-            progress = { v.level.toFloat() / v.max },
-            modifier = Modifier.width(60.u).height(4.u).clip(RoundedCornerShape(2.dp)),
-            color = if (v.muted) Palette.Muted else Palette.Accent,
-            trackColor = Palette.SurfaceHigh,
-            drawStopIndicator = {},
-            gapSize = 0.dp,
-        )
-        Text(if (v.muted) "Muet" else "${v.level}", color = Palette.Muted, fontSize = 12.t)
     }
 }
 
@@ -372,7 +358,7 @@ private fun DPad(diameter: Dp, k: (Int) -> Unit) {
 }
 
 @Composable
-private fun Rocker(label: String, modifier: Modifier, up: () -> Unit, down: () -> Unit) {
+private fun Rocker(label: String, detail: String?, modifier: Modifier, up: () -> Unit, down: () -> Unit) {
     Column(
         modifier.fillMaxSize().clip(RoundedCornerShape(30.u)).background(Palette.Surface),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -381,6 +367,7 @@ private fun Rocker(label: String, modifier: Modifier, up: () -> Unit, down: () -
             Icon(Icons.Rounded.Add, null, Modifier.size(24.u))
         }
         Text(label, color = Palette.Muted, fontSize = 12.t, fontWeight = FontWeight.SemiBold)
+        if (detail != null) Text(detail, color = Palette.Accent, fontSize = 11.t)
         PressKey(down, Modifier.fillMaxWidth().weight(1f), RoundedCornerShape(30.u), Color.Transparent, true, "$label -") {
             Icon(Icons.Rounded.Remove, null, Modifier.size(24.u))
         }
