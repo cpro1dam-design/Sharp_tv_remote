@@ -155,19 +155,22 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
                 ) {
                     Header(state, vm, k)
 
-                    DPad(dpad, k)
-
-                    // Home in the middle, back and menu next to it, search and settings at the ends.
+                    // Search and settings in the lower corners beside the D-pad, just above back / menu.
                     Row(
                         Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.u, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom,
                     ) {
                         RoundKey(Icons.Rounded.Search, "Recherche", 46) { k(KeyCodes.SEARCH) }
+                        DPad(dpad, k)
+                        RoundKey(Icons.Rounded.Settings, "Paramètres", 46) { k(KeyCodes.SETTINGS) }
+                    }
+
+                    // Home in the middle, back and menu next to it.
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.u, Alignment.CenterHorizontally)) {
                         RoundKey(Icons.AutoMirrored.Rounded.ArrowBack, "Retour", 54) { k(KeyCodes.BACK) }
                         RoundKey(Icons.Rounded.Home, "Accueil", 54) { k(KeyCodes.HOME) }
                         RoundKey(Icons.Rounded.Menu, "Menu", 54) { k(KeyCodes.MENU) }
-                        RoundKey(Icons.Rounded.Settings, "Paramètres", 46) { k(KeyCodes.SETTINGS) }
                     }
 
                     // Volume in the middle, app shortcuts on each side.
