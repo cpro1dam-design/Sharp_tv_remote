@@ -27,7 +27,7 @@ protocole que l'appli officielle Google TV (« Android TV Remote v2 »).
 
 Tout tient sur un seul écran, sans défiler ; la taille des boutons s'adapte au téléphone.
 
-- En haut : marche/arrêt et source
+- En haut : marche/arrêt, nom de la télé (appuyer dessus pour changer de télé), source
 - Flèches + OK (maintenir pour répéter), avec recherche et paramètres de chaque côté
 - Retour, accueil (au centre), menu
 - Volume au centre (avec niveau affiché), raccourcis SmartTube, Netflix, VLC, Disney+ de chaque côté

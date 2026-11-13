@@ -3,6 +3,7 @@ package tvremote.app.ui
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -51,11 +52,11 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.ArrowDropDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -212,31 +213,58 @@ fun RemoteScreen(state: UiState, vm: RemoteActions) {
     }
 }
 
-/** Top row: power and source, then the TV name and connection status. */
+/**
+ * Top row: power, the TV name and connection status, source.
+ * Tapping the TV name offers to switch to another TV.
+ */
 @Composable
 private fun Header(state: UiState, vm: RemoteActions, k: (Int) -> Unit) {
+    var confirmChange by remember { mutableStateOf(false) }
+    val name = state.tv?.name ?: "Télé"
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         RoundKey(Icons.Rounded.PowerSettingsNew, "Marche / arrêt", 46, Palette.Power) { k(KeyCodes.POWER) }
         Spacer(Modifier.width(10.u))
-        RoundKey(Icons.AutoMirrored.Rounded.Input, "Source", 46) { k(KeyCodes.TV_INPUT) }
-        Spacer(Modifier.width(14.u))
         val (dot, label) = when (state.connection) {
             Connection.Connected -> Palette.Ok to "Connectée"
             Connection.Connecting -> Palette.Yellow to "Connexion…"
             Connection.Disconnected -> Palette.Muted to "Déconnectée"
         }
-        Column(Modifier.weight(1f)) {
-            Text(state.tv?.name ?: "Télé", fontWeight = FontWeight.SemiBold, fontSize = 15.t, maxLines = 1,
-                overflow = TextOverflow.Ellipsis)
+        Column(
+            Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(12.u))
+                .clickable(onClickLabel = "Changer de télé") { confirmChange = true }
+                .padding(vertical = 4.u),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(name, fontWeight = FontWeight.SemiBold, fontSize = 15.t, maxLines = 1,
+                    overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                Icon(Icons.Rounded.ArrowDropDown, null, Modifier.size(20.u), tint = Palette.Muted)
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(7.u).clip(CircleShape).background(dot))
                 Spacer(Modifier.width(5.u))
                 Text(label, color = Palette.Muted, fontSize = 11.t)
             }
         }
-        IconButton(onClick = vm::changeTv, modifier = Modifier.size(40.u)) {
-            Icon(Icons.Rounded.SwapHoriz, "Changer de télé", Modifier.size(22.u), tint = Palette.Muted)
-        }
+        Spacer(Modifier.width(10.u))
+        RoundKey(Icons.AutoMirrored.Rounded.Input, "Source", 46) { k(KeyCodes.TV_INPUT) }
+    }
+
+    if (confirmChange) {
+        AlertDialog(
+            onDismissRequest = { confirmChange = false },
+            title = { Text("Changer de télé ?") },
+            text = { Text("La télécommande va se déconnecter de « $name » et chercher les télés sur le Wi-Fi.") },
+            confirmButton = {
+                TextButton(onClick = { confirmChange = false; vm.changeTv() }) { Text("Changer") }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmChange = false }) { Text("Annuler") }
+            },
+            containerColor = Palette.Surface,
+        )
     }
 }
 
